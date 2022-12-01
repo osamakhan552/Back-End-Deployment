@@ -132,4 +132,4 @@ def onlyReceivedOrder(request,format = None):
                     
                     lst.append(myData.data)
         print(lst)
-        return Response({'msg':lst},status=status.HTTP_202_ACCEPTED)
+        return Response({'msg':lst},status=status.HTTP_200_OK)

@@ -52,16 +52,26 @@ class OrderReceived(models.Model):
     
 @receiver(post_save,sender=Order)
 def createMail(sender,instance,created,**kwargs):
-    
-    to = str(instance.vendorCode.vendorPrimaryEmail)
-    fro='wppl.team@gmail.com'
-    subject = "Chaoudhary Batteries"
-    
-    body = "Dear Vendor,"+ \
-            "\n\nWe want to purchase following items from you" "." + \
-            "\nProduct Name: "+ str(instance.prodNumber.prodName) +  \
-            "\nQunatity: "+ str(instance.orderQuantity) + \
-            "\nExpected Delivery: " + str(instance.orderDelivery) + \
-            "\n\nThanks and regards\nChaudhary Batteries-Akola\nContact No-0000000000"
 
-    sendEmail(to,subject,body)
+    if created:
+        to = str(instance.vendorCode.vendorPrimaryEmail)
+        fro='wppl.team@gmail.com'
+        subject = "Chaoudhary Batteries"
+        
+        body = "Dear Vendor,"+ \
+                "\n\nWe want to purchase following items from you" "." + \
+                "\nProduct Name: "+ str(instance.prodNumber.prodName) +  \
+                "\nQunatity: "+ str(instance.orderQuantity) + \
+                "\nExpected Delivery: " + str(instance.orderDelivery) + \
+                "\n\nThanks and regards\nChaudhary Batteries-Akola\nContact No-0000000000"
+
+        sendEmail(to,subject,body)
+
+@receiver(post_save,sender=OrderReceived)
+def createMail(sender,instance,created,**kwargs):
+    
+    order = Order.objects.get(orderId = instance.orderNumber.orderId)
+    order.status = True
+    order.save()
+
+ 
