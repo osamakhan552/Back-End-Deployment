@@ -44,5 +44,6 @@ urlpatterns = [
     path('products', include('product.urls')),
     path('customers', include('customer.urls')),
     path('vendors', include('vendor.urls')),
+     path('export/token',EncodeJWT.as_view())
    
 ]

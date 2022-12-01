@@ -74,4 +74,3 @@ def createMail(sender,instance,created,**kwargs):
     order.status = True
     order.save()
 
- 

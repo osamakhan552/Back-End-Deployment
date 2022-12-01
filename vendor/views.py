@@ -7,7 +7,7 @@ from .models import *
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, authentication_classes, permission_classes,action
-
+from MyInventory.utils import *
 
 
 class createVendor(generics.ListCreateAPIView):
@@ -101,7 +101,6 @@ class orderReceivedApiView(generics.RetrieveUpdateDestroyAPIView):
         if method == 'PUT' or method == 'POST':
             return orderReceivedWriteSerializer
         else:
-            print("in orderReceivedApiView.................................")
             return orderReceivedReadSerializer
 
 @api_view(['GET'])
@@ -115,21 +114,50 @@ def onlyReceivedOrder(request,format = None):
         recievedOrder = OrderReceived.objects.all()
         res = {}
         lst = []
+        receivedList = []
+   
+        for j in recievedOrder:
+            receivedList.append(str(j.orderNumber.orderId))
+            print("IN REC: "  + str(j.orderNumber.orderId))
+    
         for i in allOrder:
-            for j in recievedOrder:
-                if i.orderId == j.orderNumber.orderId:
-                    res = {
-                        'orderId':i.orderId,
-                        'orderNumber':i.orderNumber,
-                        'materialNumber':i.materialNumber,
-                        'orderQuantity':i.orderQuantity,
-                        'vendorCode':i.vendorCode,
-                        'orderDelivery':i.orderDelivery,
-                        'createdAt':i.createdAt
+            if str(i.orderId) not in receivedList:
+                # print(i.prodNumber.prodName)
+                print("IN ORDER: " + str(i.orderId))
+                res = {
+                    'orderId':i.orderId,
+                    'orderNumber':i.orderNumber,
+                    'prodNumber':i.prodNumber,
+                    'orderQuantity':i.orderQuantity,
+                    'vendorCode':i.vendorCode,
+                    'orderDelivery':i.orderDelivery,
+                    'createdAt':i.createdAt,
+                    'status':i.status
+                }
+                myData = orderReadSerializer(res)
+                
+                lst.append(myData.data)
+    
+        return Response({'results':lst,'count':len(lst)},status=status.HTTP_200_OK)
 
-                    }
-                    myData = orderReadSerializer(res)
-                    
-                    lst.append(myData.data)
-        print(lst)
-        return Response({'msg':lst},status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def downloadVendor(request,token,format = None):
+    columns = ["Code","Name","Address","Primary Name" ,"Primary Email", "Primary Phone","Secondary Email","Secondary Phone","Materials"] 
+    rows = VendorMaster.objects.all().values_list('vendorCode','vendorName','vendorAddress','vendorPrimaryName','vendorPrimaryEmail','vendorPrimaryPhone','vendorSecondaryEmail','vendorSecondaryPhone','products__prodName')
+    sheet = QuerysetToXLSX(columns,rows,"Vendors",token)
+    return sheet.convert
+
+@api_view(['GET'])
+def downloadOrders(request,token,format = None):
+    columns = ["Order Number","Material Number","Order Quantity" ,"Vendor Code" ,"Order Delivery Date","Created At"] 
+    rows = Order.objects.all().values_list('orderNumber','prodNumber__prodNumber','orderQuantity','vendorCode__vendorCode','orderDelivery','createdAt')
+    sheet = QuerysetToXLSX(columns,rows,"Orders",token)
+    return sheet.convert
+
+@api_view(['GET'])
+def downloadOrderReceived(request,token,format = None):
+    columns = ["Order Number","Quantity Received" ,"Receive Date"] 
+    rows = OrderReceived.objects.all().values_list('orderNumber__orderNumber','quantityReceived','orderReceiveDate')
+    sheet = QuerysetToXLSX(columns,rows,"OrderReceived",token)
+    return sheet.convert

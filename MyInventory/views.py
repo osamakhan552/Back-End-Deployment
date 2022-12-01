@@ -26,3 +26,15 @@ class CustomAuthToken(ObtainAuthToken):
             'name':user.empFname
         })
 
+class EncodeJWT(APIView):
+    def get(self,request):
+        payload = {
+            'exp':datetime.now(tz=timezone.utc)+timedelta(seconds=60),
+        }
+
+        token = jwt.encode(payload, 'export', 'HS256')
+        response = Response({
+            'token': token
+        },status=status.HTTP_200_OK)
+
+        return response

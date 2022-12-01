@@ -9,4 +9,8 @@ urlpatterns = [
     path('/orders/<uuid:orderId>',orderApiView.as_view()),
     path('/orderReceived/<uuid:orderNumber>',orderReceivedApiView.as_view()),
     path('/receivedOrder',onlyReceivedOrder),
+
+    path('/exportVendor/<str:token>',downloadVendor),
+    path('/exportOrders/<str:token>',downloadOrders),
+    path('/exportOrderReceived/<str:token>',downloadOrderReceived)
 ]
