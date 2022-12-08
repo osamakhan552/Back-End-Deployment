@@ -1,10 +1,13 @@
 from django.shortcuts import render
 from rest_framework import status,generics,filters
 from rest_framework.response import Response
+
+from MyInventory.utils import QuerysetToXLSX
 from .serializer import *
 from .models import *
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view,authentication_classes, permission_classes
 
 
 
@@ -34,3 +37,9 @@ class productAPIView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+@api_view(['GET'])
+def downloadProduct(request,token,format = None):
+    columns = ["Material Number","Material Name" ,"Amount"] 
+    rows = product.objects.all().values_list('prodNumber','prodName','amount')
+    sheet = QuerysetToXLSX(columns,rows,"Product",token)
+    return sheet.convert
